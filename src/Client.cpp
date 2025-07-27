@@ -11,20 +11,19 @@
 namespace ws28 {
 	
 namespace detail {
-
-    std::string base64_encode(const unsigned char *input, std::size_t length){
-        std::size_t length_encoded = ((length + 2) / 3) * 4;
-
-        // +1: EVP_EncodeBlock appends a terminator
-        std::string output(length_encoded + 1, '\0');
-        const int encoded_length = EVP_EncodeBlock(
-            reinterpret_cast< unsigned char * >(output.data()), input, length);
-
-        assert(length_encoded == static_cast< std::size_t >(encoded_length));
-        output.resize(length_encoded);
-        return output;
-    }
-
+	std::string base64_encode(const unsigned char *input, size_t length){
+		size_t lengthReserved = ((length + 2) / 3) * 4;
+		
+		std::string output;
+		// resize adds +1 for the terminator that EVP_EncodeBlock will also add anyway
+		// it is safe to write \0 to the past-the-end terminator
+		// per https://en.cppreference.com/w/cpp/string/basic_string/data.html
+		output.resize(lengthReserved);
+		int res = EVP_EncodeBlock((unsigned char*) output.data(), input, (int) length);
+		assert(lengthReserved == (size_t) res);
+		return output;
+	}
+	
 	bool equalsi(std::string_view a, std::string_view b){
 		if(a.size() != b.size()) return false;
 		for(;;){
