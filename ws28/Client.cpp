@@ -1,8 +1,10 @@
 #include "Client.h"
 #include "Server.h"
+#include "ScopeGuard.h"
 
 #include <openssl/evp.h>
 #include <openssl/sha.h>
+#include <uv.h>
 
 #include <algorithm>
 #include <cassert>
@@ -905,7 +907,8 @@ Client::OnSocketData(char *data, size_t len)
         return;
     }
 
-    Corker corker{ *this };
+    Cork(true);
+    ScopeGuard cork_guard = [this] { Cork(false); };
 
     for (;;)
     {

@@ -4,6 +4,7 @@ target_sources(ws28 PRIVATE
   Client.cpp
   Client.h
   HTTPRequestHeaders.h
+  ScopeGuard.h
   Server.cpp
   Server.h
   TLS.h

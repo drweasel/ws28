@@ -32,18 +32,6 @@ class Client
     static constexpr size_t MAX_HEADER_SIZE = 10;
     static constexpr uint8_t NO_FRAMES = 0;
 
-    struct Corker
-    {
-        Client &client;
-
-        Corker(Client &client)
-          : client(client)
-        {
-            client.Cork(true);
-        }
-        ~Corker() { client.Cork(false); }
-    };
-
 public:
     ~Client();
 

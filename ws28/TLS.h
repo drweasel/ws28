@@ -1,13 +1,12 @@
-#ifndef H_3078F0E9644347BD9F28E4C56F162FC8
-#define H_3078F0E9644347BD9F28E4C56F162FC8
-
-#include <vector>
-#include <mutex>
+#pragma once
 
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
+
+#include <mutex>
+#include <vector>
 
 namespace ws28
 {
@@ -16,11 +15,11 @@ namespace ws28
 // MIT licensed
 class TLS
 {
-    enum SSLStatus
+    enum class SSLStatus
     {
-        SSLSTATUS_OK,
-        SSLSTATUS_WANT_IO,
-        SSLSTATUS_FAIL
+        OK,
+        WANT_IO,
+        FAIL
     };
 
 public:
@@ -97,7 +96,7 @@ public:
 
             if (!SSL_is_init_finished(m_SSL))
             {
-                if (DoSSLHandhake() == SSLSTATUS_FAIL)
+                if (DoSSLHandhake() == SSLStatus::FAIL)
                     return false;
                 if (!SSL_is_init_finished(m_SSL))
                     return true;
@@ -115,7 +114,7 @@ public:
             } while (n > 0);
 
             auto status = GetSSLStatus(n);
-            if (status == SSLSTATUS_WANT_IO)
+            if (status == SSLStatus::WANT_IO)
             {
                 do
                 {
@@ -131,7 +130,7 @@ public:
                     }
                 } while (n > 0);
             }
-            else if (status == SSLSTATUS_FAIL)
+            else if (status == SSLStatus::FAIL)
             {
                 return false;
             }
@@ -165,16 +164,16 @@ private:
         switch (SSL_get_error(m_SSL, n))
         {
         case SSL_ERROR_NONE:
-            return SSLSTATUS_OK;
+            return SSLStatus::OK;
 
         case SSL_ERROR_WANT_WRITE:
         case SSL_ERROR_WANT_READ:
-            return SSLSTATUS_WANT_IO;
+            return SSLStatus::WANT_IO;
 
         case SSL_ERROR_ZERO_RETURN:
         case SSL_ERROR_SYSCALL:
         default:
-            return SSLSTATUS_FAIL;
+            return SSLStatus::FAIL;
         }
     }
 
@@ -195,7 +194,7 @@ private:
             ERR_clear_error();
             n = SSL_write(m_SSL, m_EncryptBuf.data(), (int)m_EncryptBuf.size());
 
-            if (GetSSLStatus(n) == SSLSTATUS_FAIL)
+            if (GetSSLStatus(n) == SSLStatus::FAIL)
                 return false;
 
             if (n > 0)
@@ -230,7 +229,7 @@ private:
         SSLStatus status = GetSSLStatus(SSL_do_handshake(m_SSL));
 
         // Did SSL request to write bytes?
-        if (status == SSLSTATUS_WANT_IO)
+        if (status == SSLStatus::WANT_IO)
         {
             int n;
             do
@@ -244,7 +243,7 @@ private:
                 }
                 else if (!BIO_should_retry(m_WriteBIO))
                 {
-                    return SSLSTATUS_FAIL;
+                    return SSLStatus::FAIL;
                 }
 
             } while (n > 0);
@@ -262,5 +261,3 @@ private:
 };
 
 } // namespace ws28
-
-#endif

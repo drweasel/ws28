@@ -6,9 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # exports a compilation DB for clang-tidy
 
+#set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
+
 if (APPLE)
   # settings for Homebrew
-  include_directories(/opt/homebrew/include)
+  include_directories(SYSTEM /opt/homebrew/include)
 endif (APPLE)
 
 find_package(OpenSSL REQUIRED)
@@ -21,7 +23,7 @@ if ((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") OR (CMAKE_CXX_COMPILER_ID STRE
   add_compile_options(-Wextra)
   add_compile_options(-Wpedantic)
   add_compile_options(-Wno-unused-parameter)
-  #add_compile_options(-Werror)
+  add_compile_options(-Werror)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   add_compile_options(/W4 /permissive-)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)

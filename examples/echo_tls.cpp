@@ -1,11 +1,90 @@
 #include "ws28/Server.h"
+#include "ws28/ScopeGuard.h"
+
+#include <openssl/ssl.h>
 
 #include <sstream>
+
+SSL_CTX *
+create_SSL_context()
+{
+    const SSL_METHOD *method;
+    SSL_CTX *ctx;
+
+    method = TLS_server_method();
+
+    ctx = SSL_CTX_new(method);
+    if (!ctx)
+    {
+        perror("Unable to create SSL context");
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    return ctx;
+}
+
+#define STRINGIFY(s) STRINGIFY_(s)
+#define STRINGIFY_(s) #s
+
+int
+password_callback(char *buf, int size, int rwflag, void *userdata)
+{
+    char password[] = STRINGIFY(ECHO_SERVER_PEM_PASSWORD);
+
+    if (int(sizeof(password)) > size - 1)
+        return 0; // Not enough space
+
+    std::memcpy(buf, password, sizeof(password));
+
+    return (int)sizeof(password);
+}
+
+void
+configure_SSL_context(SSL_CTX *ctx)
+{
+    // Load the server's certificate
+    if (
+      SSL_CTX_use_certificate_file(ctx, "echo_server.crt", SSL_FILETYPE_PEM) <=
+      0)
+    {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    // Load the server's private key
+    if (
+      SSL_CTX_use_PrivateKey_file(ctx, "echo_server.key", SSL_FILETYPE_PEM) <=
+      0)
+    {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    // Verify that the private key matches the public certificate
+    if (!SSL_CTX_check_private_key(ctx))
+    {
+        fprintf(stderr, "Private key does not match the public certificate\n");
+        exit(EXIT_FAILURE);
+    }
+}
 
 int
 main()
 {
     static volatile sig_atomic_t quit = false;
+
+    // OPENSSL_init_ssl(0, nullptr);
+    // SSL_load_error_strings();
+    ws28::TLS::InitSSL();
+
+    SSL_CTX *ssl_ctx = create_SSL_context();
+
+    ScopeGuard ssl_ctx_guard = [&] { SSL_CTX_free(ssl_ctx); };
+
+    SSL_CTX_set_default_passwd_cb(ssl_ctx, password_callback);
+
+    configure_SSL_context(ssl_ctx);
 
     signal(
       SIGINT,
@@ -21,7 +100,7 @@ main()
           }
       });
 
-    ws28::Server s{ uv_default_loop() };
+    ws28::Server s{ uv_default_loop(), ssl_ctx };
 
     static intptr_t userID = 0;
 

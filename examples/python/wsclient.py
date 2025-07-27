@@ -1,7 +1,8 @@
-#!/usr/bin/env python3
-import websocket
+#!/usr/bin/env -S uv run --script
+
 import json
 import sys
+import websocket
 
 if __name__ == "__main__":
     # websocket.enableTrace(True)
@@ -16,6 +17,7 @@ if __name__ == "__main__":
         print(f"error: {e}")
         sys.exit(1)
 
+    # a typical JSON-RPC message ...
     msg = {
         "jsonrpc": "2.0",
         "method": "test",

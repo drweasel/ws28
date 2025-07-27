@@ -1,4 +1,8 @@
 #include "Server.h"
+#include "Client.h"
+
+#include <openssl/ssl.h>
+#include <uv.h>
 
 #include <csignal>
 
@@ -20,7 +24,10 @@ Server::Server(uv_loop_t *loop, SSL_CTX *ctx)
         if (!origin)
             return true;
 
-        return origin == host;
+        // Host consists of hostname and port, e.g. "example.com:3000"
+        // Origin consists of scheme, hostname, and port, e.g.
+        // "http://example.com:3000"
+        return origin.value().ends_with(host.value());
     };
 }
 
@@ -31,7 +38,7 @@ Server::Listen(int port, bool ipv4Only)
         return false;
 
 #ifndef _WIN32
-    signal(SIGPIPE, SIG_IGN);
+    (void)signal(SIGPIPE, SIG_IGN);
 #endif
 
     auto server = SocketHandle{ new uv_tcp_t };

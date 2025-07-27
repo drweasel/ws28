@@ -1,0 +1,16 @@
+[req]
+prompt = no
+default_bits = 4096
+distinguished_name = req_distinguished_name
+x509_extensions = x509_ext
+
+[req_distinguished_name]
+C=DE
+ST=Hesse
+L=Herborn
+O=Useless Authority
+CN=ws28_CA
+
+[x509_ext]
+basicConstraints=critical,CA:true,pathlen:0
+keyUsage=critical,keyCertSign,cRLSign
