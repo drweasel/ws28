@@ -1,17 +1,19 @@
 #include "Client.h"
 #include "Server.h"
 
-#include <openssl/evp.h>
 #include <openssl/sha.h>
+#include <openssl/evp.h>
 
-#include <string>
-#include <sstream>
+#include <algorithm>
 #include <cassert>
+#include <cctype>
+#include <sstream>
+#include <string>
 
 namespace ws28
 {
 
-namespace detail
+namespace
 {
 
 std::string
@@ -30,41 +32,33 @@ base64_encode(const unsigned char *input, std::size_t length)
 }
 
 bool
-equalsi(std::string_view a, std::string_view b)
+compare_ignore_case(std::string_view a, std::string_view b)
 {
     if (a.size() != b.size())
         return false;
-    for (;;)
-    {
-        if (tolower(a.front()) != tolower(b.front()))
-            return false;
-
-        a.remove_prefix(1);
-        b.remove_prefix(1);
-        if (a.empty())
-            return true;
-    }
+    return std::equal(
+      a.begin(),
+      a.end(),
+      b.begin(),
+      [](auto ca, auto cb) { return std::toupper(ca) == std::toupper(cb); });
 }
 
 bool
-equalsi(std::string_view a, std::string_view b, size_t n)
+compare_ignore_case(std::string_view a, std::string_view b, std::size_t n)
 {
-    while (n--)
-    {
-        if (a.empty())
-            return b.empty();
-        else if (b.empty())
-            return false;
-
-        if (tolower(a.front()) != tolower(b.front()))
-            return false;
-
-        a.remove_prefix(1);
-        b.remove_prefix(1);
-    }
-
-    return true;
+    if (n > a.size() || n > b.size())
+        return false;
+    return std::equal(
+      a.begin(),
+      a.begin() + n,
+      b.begin(),
+      [](auto ca, auto cb) { return std::toupper(ca) == std::toupper(cb); });
 }
+
+} // namespace
+
+namespace detail
+{
 
 bool
 HeaderContains(std::string_view header, std::string_view substring)
@@ -98,7 +92,7 @@ HeaderContains(std::string_view header, std::string_view substring)
         }
         else
         {
-            if (detail::equalsi(header, substring, substring.size()))
+            if (compare_ignore_case(header, substring, substring.size()))
             {
                 // We have a match... if the header ends here, or has a comma
                 hasMatch = true;
@@ -799,7 +793,7 @@ Client::OnSocketData(char *data, size_t len)
         {
             if (auto upgrade = headers.Get("upgrade"))
             {
-                if (!detail::equalsi(*upgrade, "websocket"))
+                if (!compare_ignore_case(*upgrade, "websocket"))
                 {
                     return MalformedRequest();
                 }
@@ -861,7 +855,7 @@ Client::OnSocketData(char *data, size_t len)
         auto websocketVersion = headers.Get("sec-websocket-version");
         if (!websocketVersion)
             return MalformedRequest();
-        if (!detail::equalsi(*websocketVersion, "13"))
+        if (!compare_ignore_case(*websocketVersion, "13"))
         {
             sendMyVersion = true;
         }
@@ -896,7 +890,7 @@ Client::OnSocketData(char *data, size_t len)
         EVP_MD_CTX_free(sha1);
 #endif
 
-        auto solvedHash = detail::base64_encode(hash, sizeof(hash));
+        auto solvedHash = base64_encode(hash, sizeof(hash));
 
         char buf[256]; // We can use up to 101 + 27 + 28 + 1 characters, and we
                        // round up just because
