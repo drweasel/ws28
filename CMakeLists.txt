@@ -28,16 +28,10 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   add_compile_options(/WX)
 endif ()
 
-add_subdirectory(ws28)
+include_directories(${CMAKE_SOURCE_DIR})
 
-add_executable(echo echo.cpp)
-target_include_directories(echo PRIVATE ${LIBUV_INCLUDE_DIRS})
-target_link_libraries(echo
-  ws28
-  PkgConfig::LIBUV
-  OpenSSL::SSL
-  #OpenSSL::Crypto
-  )
+add_subdirectory(ws28)
+add_subdirectory(examples)
 
 add_custom_target(__prebuild__ ALL
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
