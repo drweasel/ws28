@@ -1,14 +1,12 @@
-#ifndef H_0AC5AB22DD724A3F8FE93E27C178D633
-#define H_0AC5AB22DD724A3F8FE93E27C178D633
+#pragma once
+
+#include "HTTPRequestHeaders.h"
+#include "TLS.h"
+
+#include <uv.h>
 
 #include <cstdint>
 #include <memory>
-#include <uv.h>
-#include <algorithm>
-#include <map>
-
-#include "Headers.h"
-#include "TLS.h"
 
 namespace ws28
 {
@@ -32,13 +30,19 @@ typedef std::unique_ptr< uv_tcp_t, detail::SocketDeleter > SocketHandle;
 class Server;
 class Client
 {
-    enum
+    static constexpr size_t MAX_HEADER_SIZE = 10;
+    static constexpr uint8_t NO_FRAMES = 0;
+
+    struct Corker
     {
-        MAX_HEADER_SIZE = 10
-    };
-    enum : unsigned char
-    {
-        NO_FRAMES = 0
+        Client &client;
+
+        Corker(Client &client)
+          : client(client)
+        {
+            client.Cork(true);
+        }
+        ~Corker() { client.Cork(false); }
     };
 
 public:
@@ -128,10 +132,8 @@ private:
     std::vector< char > m_FrameBuffer;
 
     friend class Server;
-    friend struct detail::Corker;
+    friend struct Corker;
     friend class std::unique_ptr< Client >;
 };
 
 } // namespace ws28
-
-#endif

@@ -16,10 +16,22 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(LIBUV REQUIRED IMPORTED_TARGET libuv)
 
+if ((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMKE_CXX_COMPILER_ID STREQUAL "GNU"))
+  add_compile_options(-Wall)
+  add_compile_options(-Wextra)
+  add_compile_options(-Wpedantic)
+  add_compile_options(-Wno-unused-parameter)
+  #add_compile_options(-Werror)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  add_compile_options(/W4 /permissive-)
+  add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+  add_compile_options(/WX)
+endif ()
+
 add_library(ws28 OBJECT
   src/Client.cpp
   src/Client.h
-  src/Headers.h
+  src/HTTPRequestHeaders.h
   src/Server.cpp
   src/Server.h
   src/TLS.h

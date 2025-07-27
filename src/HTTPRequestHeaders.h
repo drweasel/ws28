@@ -1,18 +1,16 @@
-#ifndef H_39B56032251A44728943666BD008D047
-#define H_39B56032251A44728943666BD008D047
+#pragma once
 
-#include <cstring>
-#include <vector>
-#include <utility>
-#include <string_view>
 #include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ws28
 {
 class Client;
 class Server;
 
-class RequestHeaders
+class HTTPRequestHeaders
 {
 public:
     void Set(std::string_view key, std::string_view value)
@@ -23,7 +21,7 @@ public:
     template< typename F >
     void ForEachValueOf(std::string_view key, const F &f) const
     {
-        for (auto &p : m_Headers)
+        for (const auto &p : m_Headers)
         {
             if (p.first == key)
                 f(p.second);
@@ -32,7 +30,7 @@ public:
 
     std::optional< std::string_view > Get(std::string_view key) const
     {
-        for (auto &p : m_Headers)
+        for (const auto &p : m_Headers)
         {
             if (p.first == key)
                 return p.second;
@@ -44,7 +42,7 @@ public:
     template< typename F >
     void ForEach(const F &f) const
     {
-        for (auto &p : m_Headers)
+        for (const auto &p : m_Headers)
         {
             f(p.first, p.second);
         }
@@ -58,5 +56,3 @@ private:
 };
 
 } // namespace ws28
-
-#endif

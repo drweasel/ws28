@@ -1,11 +1,10 @@
-#ifndef H_2ABA91710E664A51814F459521E1C4D4
-#define H_2ABA91710E664A51814F459521E1C4D4
+#pragma once
 
-#include <memory>
-#include <map>
-#include <string>
-#include <string_view>
 #include <cassert>
+#include <map>
+#include <memory>
+#include <string_view>
+#include <string>
 
 #include "Client.h"
 
@@ -21,7 +20,7 @@ struct HTTPRequest
     std::string_view ip;
 
     // Header keys are always lower case
-    const RequestHeaders &headers;
+    const HTTPRequestHeaders &headers;
 };
 
 class HTTPResponse
@@ -209,5 +208,3 @@ private:
 };
 
 } // namespace ws28
-
-#endif

@@ -1,8 +1,6 @@
 #include "Server.h"
 
-#ifndef _WIN32
-#    include <signal.h>
-#endif
+#include <csignal>
 
 namespace ws28
 {
