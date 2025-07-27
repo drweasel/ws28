@@ -12,7 +12,6 @@ namespace ws28
 {
 namespace detail
 {
-struct Corker;
 struct SocketDeleter
 {
     void operator()(uv_tcp_t *socket) const
@@ -25,7 +24,7 @@ struct SocketDeleter
 };
 } // namespace detail
 
-typedef std::unique_ptr< uv_tcp_t, detail::SocketDeleter > SocketHandle;
+using SocketHandle = std::unique_ptr< uv_tcp_t, detail::SocketDeleter >;
 
 class Server;
 class Client
