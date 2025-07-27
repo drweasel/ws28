@@ -28,14 +28,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   add_compile_options(/WX)
 endif ()
 
-add_library(ws28 OBJECT
-  src/Client.cpp
-  src/Client.h
-  src/HTTPRequestHeaders.h
-  src/Server.cpp
-  src/Server.h
-  src/TLS.h
-  )
+add_subdirectory(ws28)
 
 add_executable(echo echo.cpp)
 target_include_directories(echo PRIVATE ${LIBUV_INCLUDE_DIRS})
