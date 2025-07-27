@@ -1,15 +1,30 @@
 #include "Client.h"
 #include "Server.h"
-#include "base64.h"
+
+#include <openssl/evp.h>
+#include <openssl/sha.h>
+
 #include <string>
 #include <sstream>
 #include <cassert>
 
-#include <openssl/sha.h>
-
 namespace ws28 {
 	
 namespace detail {
+
+    std::string base64_encode(const unsigned char *input, std::size_t length){
+        std::size_t length_encoded = ((length + 2) / 3) * 4;
+
+        // +1: EVP_EncodeBlock appends a terminator
+        std::string output(length_encoded + 1, '\0');
+        const int encoded_length = EVP_EncodeBlock(
+            reinterpret_cast< unsigned char * >(output.data()), input, length);
+
+        assert(length_encoded == static_cast< std::size_t >(encoded_length));
+        output.resize(length_encoded);
+        return output;
+    }
+
 	bool equalsi(std::string_view a, std::string_view b){
 		if(a.size() != b.size()) return false;
 		for(;;){
@@ -651,7 +666,7 @@ void Client::OnSocketData(char *data, size_t len){
 		EVP_MD_CTX_free(sha1);
 #endif
 		
-		auto solvedHash = base64_encode(hash, sizeof(hash));
+		auto solvedHash = detail::base64_encode(hash, sizeof(hash));
 		
 		char buf[256]; // We can use up to 101 + 27 + 28 + 1 characters, and we round up just because
 		int bufLen = snprintf(buf, sizeof(buf),
