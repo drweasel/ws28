@@ -126,7 +126,7 @@ Server::OnConnection(uv_stream_t *server, int status)
 
     if (uv_accept(server, (uv_stream_t *)socket.get()) == 0)
     {
-        auto client = new Client(this, std::move(socket));
+        auto client = std::shared_ptr<Client>(new Client(this, std::move(socket)));
         m_Clients.emplace_back(client);
 
         // If for whatever reason uv_tcp_getpeername failed (happens...
@@ -136,22 +136,20 @@ Server::OnConnection(uv_stream_t *server, int status)
     }
 }
 
-std::unique_ptr< Client >
+void
 Server::NotifyClientPreDestroyed(Client *client)
 {
     for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
     {
         if (it->get() == client)
         {
-            std::unique_ptr< Client > r = std::move(*it);
             *it = std::move(m_Clients.back());
             m_Clients.pop_back();
-            return r;
+            return;
         }
     }
 
     assert(false);
-    return {};
 }
 
 } // namespace ws28
