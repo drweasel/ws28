@@ -28,7 +28,7 @@ struct SocketDeleter
 using SocketHandle = std::unique_ptr< uv_tcp_t, detail::SocketDeleter >;
 
 class Server;
-class Client
+class Client : public std::enable_shared_from_this< Client >
 {
     static constexpr size_t MAX_HEADER_SIZE = 10;
     static constexpr uint8_t NO_FRAMES = 0;
@@ -46,19 +46,13 @@ public:
     void *GetUserData() { return m_pUserData; }
 
     bool IsSecure() { return m_pTLS != nullptr; }
-    bool IsUsingAlternativeProtocol()
-    {
-        return m_bUsingAlternativeProtocol;
-    }
+    bool IsUsingAlternativeProtocol() { return m_bUsingAlternativeProtocol; }
 
     Server *GetServer() { return m_pServer; }
 
     const char *GetIP() const { return m_IP; }
 
-    bool HasClientRequestedClose() const
-    {
-        return m_bClientRequestedClose;
-    }
+    bool HasClientRequestedClose() const { return m_bClientRequestedClose; }
 
 private:
     struct DataFrame
