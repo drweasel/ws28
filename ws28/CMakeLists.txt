@@ -8,6 +8,8 @@ target_sources(ws28 PRIVATE
   Server.cpp
   Server.h
   TLS.h
+  UTF8.cpp
+  UTF8.h
   )
 
 target_include_directories(ws28 PUBLIC
