@@ -2,6 +2,7 @@
 
 #include "HTTPRequestHeaders.h"
 #include "TLS.h"
+#include "UTF8.h"
 
 #include <uv.h>
 
@@ -41,20 +42,20 @@ public:
     void Destroy();
     void Send(const char *data, size_t len, uint8_t opCode = 2);
 
-    inline void SetUserData(void *v) { m_pUserData = v; }
-    inline void *GetUserData() { return m_pUserData; }
+    void SetUserData(void *v) { m_pUserData = v; }
+    void *GetUserData() { return m_pUserData; }
 
-    inline bool IsSecure() { return m_pTLS != nullptr; }
-    inline bool IsUsingAlternativeProtocol()
+    bool IsSecure() { return m_pTLS != nullptr; }
+    bool IsUsingAlternativeProtocol()
     {
         return m_bUsingAlternativeProtocol;
     }
 
-    inline Server *GetServer() { return m_pServer; }
+    Server *GetServer() { return m_pServer; }
 
-    inline const char *GetIP() const { return m_IP; }
+    const char *GetIP() const { return m_IP; }
 
-    inline bool HasClientRequestedClose() const
+    bool HasClientRequestedClose() const
     {
         return m_bClientRequestedClose;
     }
@@ -96,10 +97,12 @@ private:
 
     void Cork(bool v);
 
-    // Stub, maybe some day
-    inline bool IsValidUTF8(const char *, size_t) { return true; }
+    bool IsValidUTF8(const char *str, size_t len)
+    {
+        return ::IsValidUTF8(std::string_view(str, len));
+    }
 
-    inline bool IsBuildingFrames() { return m_iFrameOpcode != NO_FRAMES; }
+    bool IsBuildingFrames() { return m_iFrameOpcode != NO_FRAMES; }
 
     Server *m_pServer;
     SocketHandle m_Socket;
