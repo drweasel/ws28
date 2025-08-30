@@ -1,6 +1,8 @@
 #pragma once
 
 #include <concepts>
+#include <csignal>
+#include <exception>
 #include <functional>
 
 class ScopeGuard
@@ -38,6 +40,23 @@ public:
     ~ScopeGuard()
     {
         if (destruct_)
-            destruct_();
+        {
+            bool pending_exception = std::uncaught_exception();
+            try
+            {
+                destruct_();
+            }
+            catch (...)
+            {
+                if (pending_exception)
+                {
+#if (defined __linux__) || (defined __APPLE__)
+                    raise(SIGTRAP);
+#elif (defined _WIN32)
+                    __debugbreak();
+#endif
+                }
+            }
+        }
     }
 };
