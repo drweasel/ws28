@@ -7,6 +7,7 @@ target_sources(ws28 PRIVATE
   ScopeGuard.h
   Server.cpp
   Server.h
+  TLS.cpp
   TLS.h
   UTF8.cpp
   UTF8.h

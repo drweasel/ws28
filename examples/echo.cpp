@@ -21,7 +21,7 @@ main()
           }
       });
 
-    ws28::Server s{ uv_default_loop() };
+    ws28::Server s(uv_default_loop());
 
     static intptr_t userID = 0;
 
