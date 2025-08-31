@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # exports a compilation DB for clang-tidy
 
 #set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
+#set(CMAKE_BUILD_TYPE Debug)
 
 if (APPLE)
   # settings for Homebrew
