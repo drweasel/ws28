@@ -41,7 +41,7 @@ public:
     {
         if (destruct_)
         {
-            bool pending_exception = std::uncaught_exception();
+            bool pending_exception = std::uncaught_exceptions() > 0;
             try
             {
                 destruct_();
